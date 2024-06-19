@@ -12,13 +12,19 @@
     <li>Getting forecasts</li>
   </ul>
 </h3>
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/12ec1759-907f-4772-ab0f-22f763c5d5ff)
 <hr>
-<img src="https://github.com/krisztiankarolyi/diploma_dolgozat/assets/145534392/81bf7673-fc43-4cde-8113-2e7fcaf8a748"> 
 <h3>Screens: </h3>
-<img src="https://github.com/krisztiankarolyi/diploma_dolgozat/assets/145534392/b71fd9e2-e621-4308-956f-9a18bd206954">
-<img src="https://github.com/krisztiankarolyi/diploma_dolgozat/assets/145534392/132b171b-841d-4a88-b9f0-10826806f843">
-<img src="https://github.com/krisztiankarolyi/diploma_dolgozat/assets/145534392/278e7a30-0fa6-415f-b265-bfebe2801fba">
-<img src="https://github.com/krisztiankarolyi/diploma_dolgozat/assets/145534392/be310627-5807-441d-8a2b-3b08fcd77cad">
-<img src="https://github.com/krisztiankarolyi/diploma_dolgozat/assets/145534392/6a644e21-7937-435d-bb63-d0e96f1ad674">
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/1cd36a4e-9306-401c-81f5-4a0a4475e59f)
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/aabde485-8770-4a7b-aeb1-83eac44a7647)
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/08cd4a74-858b-4cef-9ad0-2bab1c8e94c7)
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/975043ab-4e77-4bc2-98a2-a6fe3ffbcf3d)
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/a4023fa5-96aa-438d-a33d-d04f62275ea1)
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/8a929d34-8c95-4ba7-8e7e-9385103adca4)
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/9d5212bc-ff4c-4e1f-b5ea-6547179b2bad)
+![image](https://github.com/krisztiankarolyi/Django_forecast_app/assets/145534392/4d44a90c-45e3-43f6-98c7-dc87ed09a778)
+
+
+
 
 
