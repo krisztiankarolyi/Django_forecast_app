@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-tooltip@0.10.0/bulma-tooltip.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-switch@0.9.0/bulma-switch.min.css">
+    <title>Fájlfeltöltés</title>
+</head>
+
+<body class="has-background-dark" style="min-height: 100vh;">
+    <section class="section has-background-dark" >
+        <div class="container">
+            <h1 class="title has-text-white has-text-center">Idősor feltöltése </h1>
+            <h2 class="has-text-white">Kérem, töltse fel az előkészített .XLS / .XLSX fájlt!</h2>
+            {% if messages %}
+            <div style="color: red;"">
+                {% for message in messages %}
+                    {% if forloop.first %}
+                       <i>utolsó hiba: {{ message }} </i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+            <form action="{% url 'home' %}" method="post" enctype="multipart/form-data" class="has-background-grey-light p-4">
+                {% csrf_token %}
+                <div class="field">
+                    <div class="file has-name is-boxed">
+                        <label class="file-label">
+                            <input class="file-input" id="fileInput" accept=".xlsx, .xls" type="file" name="file">
+                            <span class="file-cta">
+                                <span class="file-icon">
+                                    <i class="fas fa-upload"></i>
+                                </span>
+                                <span class="file-label">
+                                    Válasszon fájlt...
+                                </span>
+                            </span>
+                            <span class="file-name" id="fileNameLabel">
+                                Nincs kiválasztott fájl.
+                            </span>
+                        </label>
+                    </div>
+                    <label class="label" for="startRow">Mi a munkalap neve?</label>
+                    <div class="control">
+                        <input class="input" value="data" type="text"  required name="sheet" id="sheet">
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <label class="label" for="test_size">Az idősor első
+                            <span id="trainSize">
+                                 <input style="font-size: 16px; padding: 0; color: blue; background-color: inherit; border: 1px solid white; width: 50px;" type="number" value="80" min="50" max="95" required name="train_size" id="train_size">
+                                </span>
+                                %-a tanítóadatként lesz használva, (a modellek illesztésére), és 
+                                <span id="test_size">20</span>%-a tesztadatként (az általánosító-képesség vizsgálatára). </label>
+                       
+                    </div>
+                </div>
+                <hr>  
+                <div class="field">
+                    <div class="control">
+                        <button type="submit" class="button is-primary">Feltöltés</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const trainSizeInput = document.getElementById('train_size');
+        const testSizeDisplay = document.getElementById('test_size');
+        const fileInput = document.getElementById('fileInput');
+        const fileNameLabel = document.getElementById('fileNameLabel');
+
+        trainSizeInput.addEventListener('change', function() {
+            let trainSize = parseInt(trainSizeInput.value, 10);
+
+            if (trainSize < 50) {
+                trainSize = 50;
+                trainSizeInput.value = trainSize;
+            } else if (trainSize > 95) {
+                trainSize = 95;
+                trainSizeInput.value = trainSize;
+            }
+
+            testSizeDisplay.innerHTML = 100 - trainSize;
+        });
+
+        fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
+            fileNameLabel.textContent = fileInput.files[0].name;
+        } else {
+            fileNameLabel.textContent = 'Nincs kiválasztott fájl.';
+        }
+    });
+    });
+    </script>
+</body>
+</html>

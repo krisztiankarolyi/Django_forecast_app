@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <title>ARIMA előrejelzések</title>
+    <style>
+        img:hover{border: 2px solid crimson;}
+        .tables{
+            width: 100%;
+            padding: 5px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: stretch;
+            align-content: stretch;
+        }
+
+
+        @media screen and (max-width: 600px) {
+            .tables{
+                flex-direction: column;
+                flex-wrap: wrap;
+                margin: auto;
+            }
+
+            .tables table{
+            width: 100%;
+            height: 100%;
+            table-layout: fixed;
+        }
+        }
+    </style>
+</head>
+<br>
+<body class="has-background-dark has-text-light" style=" min-height: 100vh;">
+    <div class="container" style="max-width: 1600px; width: 100%;">
+        <div class="container">
+            <div class="tables">
+                <h2 class="subtitle has-text-light">A modell kiértékelése és előrejelzései.</h2>
+                <table class="table is-bordered" style="width: 100%;">
+                    <thead class="has-background-info">
+                        <tr>
+                            <th>Model</th>                         
+                            <th colspan="6" style="text-align: center;">Illeszkedés</th>
+                            <th colspan="4" style="text-align: center;">Általánosítás</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th>AIC</th>
+                            <th>BIC</th>
+                            <th>MSE</th>
+                            <th>RRMSE</th>
+                            <th>MAPE</th>
+                            <th>R2</th>
+
+                            <th>MSE</th>
+                            <th>RRMSE</th>
+                            <th>MAPE</th>
+                            <th>R2</th>                          
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for idosor in idosorok %}
+                        <tr>
+                            <td><b>{{ idosor.ARIMA.modelName }}</b> <br>
+                                 AR <sub>i</sub> együtthatói - ϕ<sub>i</sub> = {{idosor.ARIMA.coefs.AR}} <br> 
+                                 MA <sub>i</sub> együtthatói - θ<sub>i</sub> = {{idosor.ARIMA.coefs.MA}}
+                            </td>
+                            <td>{{idosor.ARIMA.aic|floatformat:2}}</td>
+                            <td>{{idosor.ARIMA.bic|floatformat:2}}</td>
+                            <td>{{ idosor.ARIMA.mseTrain|floatformat:2 }} </td>
+                            <td>{{ idosor.ARIMA.rrmseTrain|floatformat:2 }} </td>
+                            <td>{{ idosor.ARIMA.mapeTrain|floatformat:2 }} %</td>
+                            <td>{{ idosor.ARIMA.r2Train|floatformat:2 }} </td>
+
+                            <td>{{ idosor.ARIMA.mseTest|floatformat:2 }} </td>
+                            <td>{{ idosor.ARIMA.rrmseTest|floatformat:2 }} </td>
+                            <td>{{ idosor.ARIMA.mapeTest|floatformat:2 }} %</td>
+                            <td>{{ idosor.ARIMA.r2Test|floatformat:2 }} </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                
+
+            {% for idosor in idosorok %}
+            <table class="table is-bordered">
+                <thead>
+                    <tr>
+                        <td colspan="3" class="has-text-centered has-text-light has-background-info">
+                            <strong>{{ idosor.ARIMA.modelName}} </strong> 
+                        </td>
+                    </tr>
+                    <tr class="has-background-info">
+                        <th >Tanító adatokra adott becslések </th>
+                        <th>Tesztadatokra adott becslések</th>
+                        <th>Előrejelzések</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.ARIMA.train_diagram }}">
+                                <img src="data:image/png;base64,{{ idosor.ARIMA.train_diagram  }}" style="width: 100%; height: 100%;">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.ARIMA.test_diagram }}">
+                                <img src="data:image/png;base64,{{idosor.ARIMA.test_diagram }}" style="width: 100%; height: 100%;">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.ARIMA.forecast_diagram }}">
+                                <img src="data:image/png;base64,{{idosor.ARIMA.forecast_diagram }}" style="width: 100%; height: 100%;">
+                            </a>
+                        </td>
+ 
+                    </tr>
+                    <tr class="has-background-info" style="text-align: center;">
+                        <th colspan="3">Általánosítás - diagnosztika </th>
+                    </tr>
+                    <tr class="has-background-info">
+                        <th>A reziduumok eloszlása</th>
+                        <th>A reziduumok vonalgrafikonja</th>
+                        <th>A reziduumok közötti autokorrelációk</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.ARIMA.TesterrorHistogram }}">
+                                <img src="data:image/png;base64,{{ idosor.ARIMA.TesterrorHistogram }}">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.ARIMA.TestresidualsPlot }}">
+                                <img src="data:image/png;base64,{{ idosor.ARIMA.TestresidualsPlot }}">
+                            </a>
+                        {{ idosor.mlp_model.white | safe }}
+                        </td>
+                        <td>
+                            <img src="data:image/png;base64,{{ idosor.ARIMA.TestresACFPlot }}">
+                        </td>
+                    </tr>
+                    
+                    <tr class="has-background-info" style="text-align: center;">
+                        <th colspan="3">tanulás - diagnosztika </th>
+                    </tr>
+                    <tr class="has-background-info">
+                        <th>A reziduumok eloszlása</th>
+                        <th>A reziduumok vonalgrafikonja</th>
+                        <th>A reziduumok közötti autokorrelációk</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.ARIMA.TrainErrorHistogram }}">
+                                <img src="data:image/png;base64,{{ idosor.ARIMA.TrainErrorHistogram }}">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.ARIMA.TrainResidualsPlot }}">
+                                <img src="data:image/png;base64,{{ idosor.ARIMA.TrainResidualsPlot }}">
+                            </a>
+                        </td>
+                        <td>
+                            <img src="data:image/png;base64,{{ idosor.ARIMA.TrainResACFPlot }}">
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <table class="table is-bordered" style="width: 100%;">
+                <thead class="has-background-info">
+
+                    <tr>
+                        <th>Valódi adat</th>
+                        <th>Előrejelzés</th>
+                        <th>Hiba</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction, realValue, residual in idosor.ARIMA.becsleseksZipped %}
+                    <tr>
+                        <td>{{ realValue | floatformat:2 }}</td>
+                        <td>{{ prediction | floatformat:2 }}</td>
+                        <td>{{ residual | floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                   
+                    </tbody></table>
+            {% endfor %} 
+            
+            
+        </div>
+        <br>
+    </div>
+    </div>
+    </body>
+</html>

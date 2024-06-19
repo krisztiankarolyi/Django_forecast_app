@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.2/css/bulma.min.css">
+    <title>MLP Előrejelzések</title>
+    <style>
+        img:hover{border: 2px solid crimson;}
+        .tables{
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: stretch;
+
+        }
+        
+        a:hover{color: white;}
+
+        .tables table{
+            width: 100%;
+            height: 100%;
+            table-layout: fixed;
+        }
+
+        .code{
+            height: 200px; 
+            font-family: monospace;
+            text-align:justify;
+            margin: 20px 0px;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            line-height: 2rem;
+            overflow: auto;
+        }
+        
+        .half{
+            width: 50%;
+        }
+
+        .flex{
+            display: flex; flex-direction: row; flex-wrap: nowrap;
+        }
+
+        @media screen and (max-width: 600px) 
+        {
+            .tables{
+                overflow-x: auto;
+                flex-direction: column;
+                flex-wrap: wrap;
+                margin: auto;
+            }
+
+            .tables table{
+            height: 100%;
+            width: auto;
+             }
+             .flex{
+                display: flex; flex-direction: column; flex-wrap: wrap;
+            }   
+            .half{
+            width: 100%;
+        }
+        
+        }
+    </style>
+</head>
+<body class="has-background-dark has-text-light " style="min-height: 100vh">
+<section class="section">
+   <a href="javascript:history.back()">A modell módosítása</a>
+    <div class="container">
+        <h1 class="title has-text-light" >Az MLP regressziós modellek eredményei</h1>
+        <div class="tables">
+            <div class="table-container">
+                <table class="table is-bordered is-fullwidth">
+                    <thead class="has-background-info">
+                        <tr>
+                            <th>Model</th>
+                            <th colspan="4" style="text-align: center;">Általánosítás</th>
+                            <th colspan="4" style="text-align: center;">Tanulás</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="has-background-info">
+                            <td colspan="1"></td>
+                            <th>R2</th>
+                            <th>MSE</th>
+                            <th>RRMSE</th>
+                            <th>MAPE</th>
+                            <th>R2</th>
+                            <th>MSE</th>
+                            <th>RRMSE</th>
+                            <th>MAPE</th>
+                        </tr>
+                        {% for idosor in idosorok %}
+                        <tr>
+                            <td>{{ idosor.idosor_nev }} MLP ({{ idosor.mlp_model.modelStr }}, {{idosor.mlp_model.model.n_layers_}} réteg)</td>
+                            <td>{{idosor.mlp_model.r2_test | floatformat:4 }}</td>
+                            <td>{{ idosor.mlp_model.mse_test | floatformat:4 }} </td>
+                            <td>{{ idosor.mlp_model.rrmse_test |floatformat:4 }} </td>
+                            <td>{{ idosor.mlp_model.mape_test |floatformat:4}} % </td>
+                            <td>{{idosor.mlp_model.r2_train | floatformat:4 }}</td>
+                            <td>{{ idosor.mlp_model.mse_train | floatformat:4 }} </td>
+                            <td>{{ idosor.mlp_model.rrmse_train |floatformat:4 }} </td>
+                            <td>{{ idosor.mlp_model.mape_train |floatformat:4}} % </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% for idosor in idosorok %}
+            <table class="table is-bordered">
+                <thead>
+                    <tr>
+                        <td colspan="3" class="has-text-centered has-text-light has-background-info">
+                            <strong>{{ idosor.idosor_nev }} MLP</strong> {{ idosor.mlp_model.modelStr }}
+                        </td>
+                    </tr>
+                    <tr class="has-background-info">
+                        <th>Tanító adatokra adott becslések</th>
+                        <th>Tesztadatokra adott becslések</th>
+                        <th>Előrejelzések</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.trainDiagram }}">
+                                <img src="data:image/png;base64,{{ idosor.mlp_model.trainDiagram }}" style="width: 100%; height: 100%;">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.diagram }}">
+                                <img src="data:image/png;base64,{{ idosor.mlp_model.diagram }}" style="width: 100%; height: 100%;">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.forecastsPlot }}">
+                                <img src="data:image/png;base64,{{ idosor.mlp_model.forecastsPlot }}" style="width: 100%;">
+                            </a>
+                        </td>
+                    </tr>
+                    <tr class="has-background-info" style="text-align: center;">
+                        <th colspan="3">Általánosítás - diagnosztika </th>
+                    </tr>
+                    <tr class="has-background-info">
+                        <th>A reziduumok eloszlása</th>
+                        <th>A reziduumok vonalgrafikonja</th>
+                        <th>A reziduumok közötti autokorrelációk</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.errorHistogram }}">
+                                <img src="data:image/png;base64,{{ idosor.mlp_model.errorHistogram }}">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.residualsPlot }}">
+                                <img src="data:image/png;base64,{{ idosor.mlp_model.residualsPlot }}">
+                            </a>
+                        {{ idosor.mlp_model.white | safe }}
+                        </td>
+                        <td>
+                            <img src="data:image/png;base64,{{ idosor.mlp_model.resACFPlot }}">
+                        </td>
+                    </tr>
+                    
+                    <tr class="has-background-info" style="text-align: center;">
+                        <th colspan="3">tanulás - diagnosztika </th>
+                    </tr>
+                    <tr class="has-background-info">
+                        <th>A reziduumok eloszlása</th>
+                        <th>A reziduumok vonalgrafikonja</th>
+                        <th>A reziduumok közötti autokorrelációk</th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.train_errorHistogram }}">
+                                <img src="data:image/png;base64,{{ idosor.mlp_model.train_errorHistogram }}">
+                            </a>
+                        </td>
+                        <td>
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.train_residualsPlot }}">
+                                <img src="data:image/png;base64,{{ idosor.mlp_model.train_residualsPlot }}">
+                            </a>
+                        </td>
+                        <td>
+                            <img src="data:image/png;base64,{{ idosor.mlp_model.train_resACFPlot }}">
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <table class="table is-bordered">
+                <thead class="has-background-info">
+
+                    <tr>
+                        <th>Valódi adat</th>
+                        <th>Előrejelzés</th>
+                        <th>Hiba</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction, realValue, residual in idosor.mlp_model.ResultsZipped %}
+                    <tr>
+                        <td>{{ realValue | floatformat:2 }}</td>
+                        <td>{{ prediction | floatformat:2 }}</td>
+                        <td>{{ residual | floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                   
+                    </tbody></table>
+            {% endfor %} 
+        </div>
+        <br>
+    
+
+        {% for idosor in idosorok %}
+        <div class="box has-background-light has-text-dark">
+        <h1 class="subtitle">{{idosor.idosor_nev}} MLP modell összefoglaló</h1>
+        <div class="columns is-gapless is-fullwidth">
+            <div class="column">
+                <table class="table is-fullwidth is-hoverable">
+                    <tbody>
+                        <tr>
+                            <td colspan="2">
+                            <a target="_blank" href="data:image/png;base64,{{ idosor.mlp_model.lossCurve }}">
+                                <img style="width: 100%; height: 50%;" src="data:image/png;base64,{{ idosor.mlp_model.lossCurve }}" alt="Veszteség görbe. Csak ADAM vagy SGD esetében elérhető.">
+                            </a></td>
+                        </tr>
+                        <tr>
+                            <th>Bemeneti neuronok száma:</th>
+                            <td>{{idosor.mlp_model.model.n_features_in_}}</td>
+                        </tr>
+                        <tr>
+                            <th>Kimeneti neuronok száma:</th>
+                            <td>{{idosor.mlp_model.model.n_outputs_}}</td>
+                        </tr>
+                        <tr>
+                            <th>Legjobb random kezdőérték a súlyozásra:</th>
+                            <td>{{idosor.mlp_model.random_state}}</td>
+                        </tr>
+                        <tr>
+                            <th>Rejtett rétegek és azok neuronjainak száma:</th>
+                            <td>{{idosor.mlp_model.modelStr}}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Normalizálási eljárás:</th>
+                            <td>{{ idosor.mlp_model.scalerMode }}</td>
+                        </tr>
+ 
+                            <th>Optimalizálási Algoritmus:</th>
+                            <td>{{ idosor.mlp_model.model.solver }}</td>
+                        </tr>
+                        <tr>
+                            <th>Optimalizálási ciklus lépésszáma:</th>
+                            <td>{{ idosor.mlp_model.model.n_iter_ }} / {{ idosor.mlp_model.model.t_}}</td>
+                        </tr>
+                        <tr>
+                            <th>Rejtett rétegek Aktivációs függvénye:</th>
+                            <td>{{ idosor.mlp_model.activation }}</td>
+                        </tr>
+                        <tr>
+                            <th>Kimeneti réteg Aktivációs függvénye:</th>
+                            <td >{{ idosor.mlp_model.model.out_activation_ }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="flex">
+            <div class="code half has-text-light">Tanító párok: (amiből megtanulta a súlyokat) <br>
+                {% for x_train, y_train in idosor.trainingPairs %}
+                    <p>{{ forloop.counter }}.  {{x_train}} --> {{y_train}}</p>
+                {% endfor %}
+            </div>
+    
+            <div class="code  half has-text-light">Teszt párok (amiket meg kell jósoljon): <br>
+                {% for x_test, y_test in idosor.testingPairs %}
+                    <p>{{ forloop.counter }}.  {{x_test}} --> {{y_test}}</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="flex">
+            <div class="code half">ELtolási értékek vektora: <br> {{idosor.mlp_model.model.intercepts_}}</div>
+            <div class="code half">Rétegek súlyai:  <br> {{idosor.mlp_model.model.coefs_}}</div>
+        </div>
+            
+        </div>
+        <br>
+        {% endfor %}
+    </div>
+    </div>
+</section>
+
+</body>
+</html>

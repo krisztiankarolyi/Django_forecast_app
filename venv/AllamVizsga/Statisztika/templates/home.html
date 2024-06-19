@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-tooltip@0.10.0/bulma-tooltip.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-switch@0.9.0/bulma-switch.min.css">
+    <title>Adatok feltöltve</title>
+    <style>
+        img:hover{border: 2px solid crimson;}
+
+    .kepek {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: center;
+        overflow: scroll;
+    }
+
+    .kepek .kep {
+        margin: 10px;  
+    }
+
+    @media screen and (max-width: 600px) {
+        .kepek {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+        .kepek .kep {
+            width: 90%;
+        }
+    }
+
+    </style>
+</head>
+<body class="has-background-dark" style="min-height: 100vh;">
+        <div style="max-width: 800px; width: 90%; margin: auto">
+            <h2 class="title has-text-light">Adatok feltöltve, kérem válasszon egy opciót az előrejelzéshez!</h2>
+            <div style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; justify-content: space-evenly;">
+                <form method="POST" action="{% url 'Box-Jenkins' %}">
+                    {% csrf_token %}
+                    <input class="button is-primary" type="submit" value="Box-Jenkins eljárás" >
+                </form>
+            
+                <form method="POST" action="{% url 'MLP' %}">
+                    {% csrf_token %}
+                    <input class="button is-primary" type="submit" value="MLP Neuronháló" >
+                </form>
+            </div>
+            <hr>
+            <h2 class="subtitle has-text-white has-text-centered">Beolvasott adatok</h2>
+            <div class="container has-background-dark has-text-light" style="max-height: 33vh; min-height: 33vh; overflow-y: scroll; min-width: 100%;">
+                <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth has-background-light" style="min-width: 100%;">
+                    <thead style="position: sticky; top: 0; z-index: 1;">
+                        <tr>
+                            <th class="has-background-grey-dark has-text-light">dátum</th>
+                            {% for nev in adatsorNevek %}
+                                <th class="has-background-grey-dark has-text-light">{{nev}}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data_row in data_rows %}
+                            <tr>
+                                <td>{{ data_row.idoPont }}</td>
+                                {% for adatsor in data_row.adatsorok %}
+                                    <td>{{ adatsor }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+            </div>
+        <br>       
+        <h2 class="subtitle has-text-white has-text-centered">Adatok közös grafikonon ábrázolva</h2>     
+            <div id="diagram" class="has-text-centered">
+              <img src="data:image/png;base64,{{ diagram }}" alt="Diagram" style=" height: 30%;">
+            </div>
+
+            <h2 class="subtitle has-text-white has-text-centered">Statisztikai mutatók</h2>
+            <hr>
+            <div class="table-container  is-fullwidth">
+                <table class="table is-bordered is-fullwidth" style="font-size: 0.85rem;">
+                    <thead>
+                        <tr>
+                            <th  class="has-background-info has-text-light">mutató/idosor</th>
+                            {% for stat in idosorok %}
+                                <th  class="has-background-info has-text-light" >{{ stat.idosor_nev }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Átlag</td>
+                            {% for stat in idosorok %}
+                                <td>{{ stat.atlag }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td >Szórás</td>
+                            {% for stat in idosorok %}
+                                <td>{{ stat.szoras }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Variancia</td>
+                            {% for stat in idosorok %}
+                                <td>{{ stat.variancia }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Medián</td>
+                            {% for stat in idosorok %}
+                                <td>{{ stat.median }}</td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Minimum</td>
+                            {% for stat in idosorok %}
+                            <td> 
+                                <div style="display: flex; flex-direction: row; align-content: center; align-items: center; justify-content: space-between;">
+                                    <i class="has-text-left" style="display: inline-block; flex: 1;">{{stat.min}}</i>  
+                                    <i class="has-text-right" style="display: inline-block; flex: 1;">{{stat.minDatum}}</i>
+                                </div>                    
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td>Maximum</td>
+                            {% for stat in idosorok %}
+                            <td> 
+                                <div style="display: flex; flex-direction: row; align-content: center; align-items: center; justify-content: space-between;">
+                                    <i class="has-text-left" style="display: inline-block; flex: 1;">{{stat.max}}</i>  
+                                    <i class="has-text-right" style="display: inline-block; flex: 1;">{{stat.maxDatum}}</i>
+                                </div>                    
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                    </tbody>
+                </table>
+                <hr>
+                <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth has-background-light" style="min-width: 100%; overflow-x: scroll;">
+                    <thead>            
+                    <tr>
+                        <th colspan="3" class="has-text-centered">Kolmogorov-Smirnov Teszt a normális eloszlásra</th>
+                    </tr>
+                    <tr>
+                    <th>Idősor</th>
+                    <th >Statisztika</th>
+                    <th>p-érték</th>
+                    </tr>
+                    </thead>
+                    <div class="kepek">
+                        {% for idosor in idosorok %}
+                            <div id="acfpacf" class="has-text-centered">
+                                <a target="_blank" href="data:image/png;base64,{{ idosor.distributionPlot }}">
+                                    <img src="data:image/png;base64,{{ idosor.distributionPlot }}" alt="eloszlás diagram class="kep">
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div><br>
+                    <tbody>
+                    {% for idosor in idosorok %}
+                    <tr>
+                    <td>{{ idosor.idosor_nev }}</td>
+                    <td>{{ idosor.Kolmogorov_Smirnov.statisztika | floatformat:2 }} </td>
+                    <td>{{ idosor.Kolmogorov_Smirnov.p_value | floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+
+        </div>
+    </body>
+</html>

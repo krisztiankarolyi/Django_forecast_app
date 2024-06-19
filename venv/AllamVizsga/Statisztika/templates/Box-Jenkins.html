@@ -1,0 +1,216 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <title>Adatok Megjelenítése</title>
+    <style>
+        img:hover{border: 2px solid crimson;}
+        body{
+            min-height: 100vh;
+            background: url("{% static 'images/ARIMA.jpg' %}") no-repeat center center;
+            background-size: cover;
+            img:hover{border: 2px solid crimson;}
+        }
+
+        .kepek {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: center;
+            overflow: scroll;
+        }
+
+        .kepek .kep {
+            margin: 10px;  
+        }
+
+        @media screen and (max-width: 600px) {
+            .kepek {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+            .kepek .kep {
+                width: 90%;
+            }
+        }
+
+                        
+        .loader {
+            display: none;
+            --d: 22px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            color: #25b09b;
+            box-shadow: 
+                calc(1 * var(--d))      calc(0 * var(--d))     0 0,
+                calc(0.707 * var(--d))  calc(0.707 * var(--d)) 0 1px,
+                calc(0 * var(--d))      calc(1 * var(--d))     0 2px,
+                calc(-0.707 * var(--d)) calc(0.707 * var(--d)) 0 3px,
+                calc(-1 * var(--d))     calc(0 * var(--d))     0 4px,
+                calc(-0.707 * var(--d)) calc(-0.707 * var(--d)) 0 5px,
+                calc(0 * var(--d))      calc(-1 * var(--d))    0 6px;
+            animation: l27 1s infinite steps(8);
+        }
+        
+        @keyframes l27 {
+            100% { transform: rotate(1turn); }
+        }
+        
+        .loader.visible {
+            display: block;
+        }
+
+    </style>
+</head>
+
+<body class="has-background-dark has-text-light" style=" min-height: 100vh;">
+    <section class="has-text-light" style=" max-width: 1000px; margin: auto;">
+            
+            <h1>Stacionaritás vizsgálata </h1>
+            <div style="overflow-x: auto;">
+                <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth has-background-light" style="min-width: 100%; overflow-x: scroll;">
+                    <thead>
+                        <tr class="has-background-dark">
+                            <th colspan=1></th>
+                            <th class="has-text-centered has-background-dark has-text-light" colspan="4">Eredeti idősor</th>
+                            <th class="has-text-centered has-background-dark has-text-light" colspan="4">ELső differencia</th>
+                        </tr>
+                        <tr >
+                            <th rowspan="2" class="has-text-centered has-background-dark has-text-light">idősor</th>
+                            <th colspan="2" class="has-text-centered has-background-dark has-text-light">ADF teszt</th>
+                            <th colspan="2" class="has-text-centered has-background-dark has-text-light">KPSS teszt</th>
+
+                            <th colspan="2" class="has-text-centered has-background-dark has-text-light">ADF teszt</th>
+                            <th colspan="2" class="has-text-centered has-background-dark has-text-light">KPSS teszt</th>
+                            
+                        </tr>
+                        <tr style="font-size: 0.9rem;">
+                            <td class="has-text-centered has-background-dark has-text-light">Statisztika <br>Kritikus érték (5% szig. szint): ({{ idosorok.0.adf.critical_values.5 }})</td>
+                            <td class="has-text-centered has-background-dark has-text-light">p-érték</td>
+                            <td class="has-text-centered has-background-dark has-text-light">Statisztika <br>Kritikus érték (5% szig. szint): ({{ idosorok.0.kpss.critical_values.5 }})</td>
+                            <td class="has-text-centered has-background-dark has-text-light">p-érték</td>
+
+                            <td class="has-text-centered has-background-dark has-text-light">Statisztika <br>Kritikus érték (5% szig. szint): ({{ idosorok.0.adf.diff_critical_values.5 }})</td>
+                            <td class="has-text-centered has-background-dark has-text-light">p-érték</td>
+                            <td class="has-text-centered has-background-dark has-text-light"> Statisztika <br>Kritikus érték (5% szig. szint): ({{ idosorok.0.kpss.diff_critical_values.5 }})</td>
+                            <td class="has-text-centered has-background-dark has-text-light">p-érték</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for idosor in idosorok %}
+                        <tr>
+                            <td class="has-text-centered has-background-dark has-text-light">{{ idosor.idosor_nev }}</td>
+
+                            <td style="background-color: {% if idosor.adf.adf_stat > idosorok.0.adf.critical_values.5 %} #ed6883   {% else %} #beedb2 {% endif %};">{{ idosor.adf.adf_stat }}</td>
+                            <td style="background-color: {% if idosor.adf.p_value > 0.06 %} #ed6883 {% elif idosor.adf.p_value > 0.05 %} #edc36f {% else %} #beedb2 {% endif %};">{{ idosor.adf.p_value }}</td>
+            
+                            <td style="background-color: {% if idosor.kpss.kpss_stat > idosorok.0.kpss.critical_values.5 %} #ed6883 {% else %} #beedb2 {% endif %};">{{ idosor.kpss.kpss_stat }}</td>
+                            <td style="background-color: {% if idosor.kpss.p_value <= 0.05 %} #ed6883 {% else %} #beedb2 {% endif %};">{{ idosor.kpss.p_value }}</td>
+            
+                            <td style="background-color: {% if idosor.adf.diff_adf_stat > idosorok.0.adf.diff_critical_values.5 %} #ed6883 {% else %} #beedb2 {% endif %};">{{ idosor.adf.diff_adf_stat }}</td>
+                            <td style="background-color: {% if idosor.adf.diff_p_value > 0.06 %} #ed6883 {% elif idosor.adf.diff_p_value > 0.05 %} #edc36f {% else %} #beedb2 {% endif %};">{{ idosor.adf.diff_p_value }}</td>
+            
+                            <td style="background-color: {% if idosor.kpss.diff_kpss_stat > idosorok.0.kpss.diff_critical_values.5 %} #ed6883 {% else %} #beedb2 {% endif %};">{{ idosor.kpss.diff_kpss_stat }}</td>
+                            <td style="background-color: {% if idosor.kpss.diff_p_value < 0.05 %} #ed6883 {% else %} #beedb2 {% endif %};">{{ idosor.kpss.diff_p_value }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="has-background-dark">
+                            <td colspan="9" class="has-text-centered">
+                                <div style="display: flex; justify-content: center; align-items: center; color: white;">
+                                    <div style="background-color: #ed6883; width: 20px; height: 20px; margin-right: 10px;"></div>
+                                    <span>nem stacionárius </span>
+
+                                    <div style="background-color: #edc36f; width: 20px; height: 20px; margin-right: 10px; margin-left: 10px;"></div>
+                                    <span> nem stacionárius (de közel a határérértékhez) </span>
+
+                                    <div style="background-color: #beedb2; width: 20px; height: 20px; margin-left: 20px; margin-right: 10px;"></div>
+                                    <span>stacionárius</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <hr>
+             <br>
+            <h1 class="subtitle has-text-centered has-text-light">Autokorrelációs és parciális autokorrelációs függvények </h1> <hr>
+             <div class="kepek">
+                {% for idosor in idosorok %}
+                    <div id="acfpacf" class="has-text-centered">
+                        <a target="_blank" href="data:image/png;base64,{{ idosor.pacf_acf_Diagram }}">
+                            <img src="data:image/png;base64,{{ idosor.pacf_acf_Diagram }}" alt="ACF és PACF teszt" class="kep">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div><br>
+            <h1 class="subtitle has-text-centered has-text-light">Autokorrelációs diagramok</h1> <hr>
+            <div class="kepek">
+                {% for idosor in idosorok %}
+                    <div id="acfpacf" class="has-text-centered">
+                        <a target="_blank" href="data:image/png;base64,{{ idosor.autocorrelationPlot }}">
+                            <img src="data:image/png;base64,{{ idosor.autocorrelationPlot }}" alt="autokorellációs diagram class="kep">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section><hr>
+
+    {% for idosor in idosorok %}
+    <div id="acfpacf" class="has-text-centered">
+        <p>{{idosor.suggestedARIMA}}</p>
+    </div>
+{% endfor %}
+
+
+    <section id="arima" style="max-width: 800px; margin: auto; width: 90%;">
+        <h1 class="title has-text-centered has-text-light">
+            ARIMA modellek beállítása teszteléshez és előrejelzéshez
+        </h1>
+      
+        <hr>
+        <form action="{% url 'arima' %}" method="POST">
+            {% csrf_token %}
+        {% for idosor in idosorok %}
+            <h3 class="has-text-centered subtitle has-text-light">{{ idosor.idosor_nev }}</h3>
+                <label for="{{ idosor.idosor_nev }}_autoArima">A legjobb p, d, q paraméterek automatikus megkeresése AIC alapján</label>
+                <input type="checkbox"  name="{{ idosor.idosor_nev  }}_autoArima" id="autoArima"> <br>
+                <div>
+                <label for="{{ idosor.idosor_nev }}_p">p</label>
+                <input class="input" type="number" value="2" min="0" required name="{{ idosor.idosor_nev  }}_p" id="{{ idosor.idosor_nev }}_p"> 
+                <label for="{{ idosor.idosor_nev }}_d">d </label>
+                <input class="input" type="number" value="0" min="0" required name="{{ idosor.idosor_nev  }}_d" id="{{ idosor.idosor_nev }}_d">
+                <label for="{{ idosor.idosor_nev }}_q">q</label>
+                <input class="input" type="number" value="0" min="0" required name="{{ idosor.idosor_nev  }}_q" id="{{ idosor.idosor_nev }}_q">
+                <br><br>
+                </div>
+                <br><br>       
+             
+        {% endfor %}
+        <label for="n_pred">Kért előrejelzések száma a tesztadatokon túl</label>
+        <input class="input" type="number" value="6" min="1"  name="n_pred" id="n_pred">
+     
+            <div style="display: flex">
+                <input type="submit" class="button is-info" style="width: 100%;" value="ARIMA előrejelzések készítése" onclick="showLoader()">
+                <div class="loader"></div> 
+             </div>
+        </form>
+        <br><br>
+    </section>
+</div>
+
+<script>
+    function showLoader() {
+          document.querySelector('.loader').classList.add('visible');
+      }
+</script>
+</body>
+
+</html>

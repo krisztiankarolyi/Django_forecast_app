@@ -1,0 +1,261 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <script type="text/javascript" async
+      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-tooltip@0.10.0/bulma-tooltip.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-switch@0.9.0/bulma-switch.min.css">
+        <title>MLP konfiguráció</title>
+
+        <style>
+             body {
+            min-height: 100vh;
+            background: url("{% static 'images/ANN.jpg' %}") no-repeat center center;
+            background-size: cover;
+        }
+            .info{
+                padding: 2px 10px;
+                border-radius: 100%;
+                text-align: center;
+                float: right;
+                height: 10px;
+
+            }
+            label{
+                line-height: 3rem;
+                width: 100%;
+                display: inline-block;
+                text-align: justify;
+            }
+
+            .info {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;         
+            }
+
+            .tooltip {
+            visibility: hidden;
+            width: 300px;
+            padding: 15px;
+            background-color: #333;
+            color: #fff;
+            text-align: justify;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -200px;
+            opacity: 0;
+            line-height: 1.2rem;
+            transition: opacity 0.5s, visibility 0.5s; /* Átmenet hozzáadása az opacity és a visibility tulajdonságokhoz */
+            max-height: 400px;
+            overflow: auto;
+        }
+
+        .info:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity 0.3s, visibility 0.3s; /* Átmenet hozzáadása az opacity és a visibility tulajdonságokhoz */
+        }
+
+                
+            .loader {
+            display: none;
+            --d: 22px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            color: #25b09b;
+            box-shadow: 
+                calc(1 * var(--d))      calc(0 * var(--d))     0 0,
+                calc(0.707 * var(--d))  calc(0.707 * var(--d)) 0 1px,
+                calc(0 * var(--d))      calc(1 * var(--d))     0 2px,
+                calc(-0.707 * var(--d)) calc(0.707 * var(--d)) 0 3px,
+                calc(-1 * var(--d))     calc(0 * var(--d))     0 4px,
+                calc(-0.707 * var(--d)) calc(-0.707 * var(--d)) 0 5px,
+                calc(0 * var(--d))      calc(-1 * var(--d))    0 6px;
+            animation: l27 1s infinite steps(8);
+        }
+        
+        @keyframes l27 {
+            100% { transform: rotate(1turn); }
+        }
+        
+        .loader.visible {
+            display: block;
+        }
+        </style>
+    </head>
+
+    <body class="has-text-light" style="min-height: 100vh; ">
+        <section id="mlp" style="max-width: 800px; margin: auto; width: 90%;">
+            <h1 class="title has-text-centered has-text-light">
+                MLP modell beállítása teszteléshez és előrejelzéshez
+            </h1>
+            <p class="has-text-justified">Az alábbi űrlapon adja meg az MLP modell paramétereit, majd kattintson az előrejelzések készítése gombra. A modell az összes beolvasott tesztadat érték száma szerint fogja előrejelzéseit elkészíteni.</p>
+            <hr>
+            <form action="{% url 'MLPResults' %}" method="POST">
+                {% csrf_token %}
+                {% for stat in idosorok %}
+                    <h3 class="has-text-centered subtitle has-text-light">{{ stat.idosor_nev }}</h3>
+                    <label for="{{ stat.idosor_nev }}_hidden_layers">Rejtett rétegek neuronjainak száma (pl. 12,12,12):</label>
+                    <input class="input" type="text" value="12,12,12" required name="{{ stat.idosor_nev }}_hidden_layers" id="{{ stat.idosor_nev }}_hidden_layers">
+                    
+                   
+                    <label for="{{ stat.namidosor_neve }}_max_iters">Maximum iterációk (epoch) száma: <span class="info"> ℹ️ 
+                        <span class="tooltip">Hány iterációt hajtson végre a tanítási algoritmus a súlyok optimalizálása során. Növelése segíthet az approximáció javításában, csökkentése az esetleges túltanítás elkerülésében.</span></span></label>
+                        <label for="{{ stat.idosor_nev }}_stop">Korai leállítás: 
+                            <i><input type="checkbox" checked="checked" name="{{ stat.idosor_nev }}_stop" value="1"> </i>
+                            <i class="info">ℹ️ 
+                                 <span class="tooltip">
+                                    <p>Ha 20 epoch után sem javul az MSE érték legalább 0.0001-gyel, akkor feltételezzük a modell konvergenciáját és a tanítás leáll, tehát nem megy végig a megadott epoch számig.</p>
+                        </span></span></label></i></label>
+                        <input class="input" type="number" value="2000" min="1" required name="{{ stat.idosor_nev }}_max_iters" id="{{ stat.idosor_nev }}_max_iters">
+
+        
+                    <label for="{{ stat.idosor_nev }}_random_state_min">Random állapot kezdőérték: <i class="info">ℹ️ <span class="tooltip">Az algoritmus véletlenszerű súlyokkal kezd, ez az érték segít az eredmény reprodukálhatóságában. Különböző értékek más eredményt generálnak. Két szám között megkeresi azt, amelyik a legkisebb RRMSE-vel rendelkező előrejelzést adja. Ha tudja melyiket szeretné, állítsa mindkettőt ugyanarra a számra.</span></span></label> </i></label>
+                    <input class="input" type="number" value="42" min="1" max="100" name="{{ stat.idosor_nev }}_random_state_min" id="{{ stat.idosor_nev }}_random_state_min">
+                   
+                    <label for="{{ stat.idosor_nev }}_random_state_max">Random állapot utsolsó érték:</label>
+                    <input class="input" type="number" value="41" min="1"  max="100" name="{{ stat.idosor_nev }}_random_state_max" id="{{ stat.idosor_nev }}_random_state_max">
+
+                    <label for="{{ stat.idosor_nev }}_targetRRMSE">Cél MSE (%): <i class="info">ℹ️  <span class="tooltip">A kezdőérték keresés leáll, ha valamelyik modell veszteségfüggvénye (MSE) eléri ezt a küszöböt.</span></span></label> </i></label>
+                    <input class="input" type="number" value="1"   max="100" name="{{ stat.idosor_nev }}_targetRRMSE" id="{{ stat.idosor_nev }}_targetRRMSE">
+
+        
+                        <label for="{{ stat.idosor_nev }}_scaler">Normalizálás: 
+                        <i class="info">ℹ️  <span class="tooltip"><p>Az adatok normalizálása segít a modellnek könynebben felismerni a mintázatokat és hamarabb konvergálni. </p><br>
+                            <p>A standardizáció képlete: <br> \( Z = \frac{X - \mu}{\sigma} \)</p><br>
+                            <p>A Min-Max skálázás képlete: <br> \(X_{\text{norm}} = \frac{X - X_{\text{min}}}{X_{\text{max}} - X_{\text{min}}}\)</p> <br>
+                            <p>A Robust skálázás képlete: <br> \(X_{\text{robust}} = \frac{X - Q_1(X)}{Q_3(X) - Q_1(X)}\)</p>
+                    </span></span></label></i></label>
+
+                    <i><input type="checkbox" checked name="{{ stat.idosor_nev }}_normOut" value="1"> ELvárt kimenetek (y_train és y_test) normalizálása, majd visszaalakítása</i>
+                    <select class="input" id="{{ stat.idosor_nev }}_scaler" name="{{ stat.idosor_nev }}_scaler">
+                        <option selected  value="standard">Standardizáció</option>
+                        <option value="minmax">Min-Max</option>
+                        <option value="robust">Robosztus</option>
+                        <option value="log">Logaritmizálás</option>
+                        <option  value="-">Nincs</option>
+                    </select>
+
+                    <label for="{{ stat.idosor_nev }}_actFunction">Aktivációs függvény: <i class="info">ℹ️ <span class="tooltip">
+                        <p>Az egyes neuronok és így a rétegek kimenetét határozza meg a kiszámított súlyozott összegek alapján. </p> 
+                        <br>
+                        \[ \sigma(x) = \frac{1}{1 + e^{-x}} \]
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Logistic-curve.svg/320px-Logistic-curve.svg.png">
+                        <br>
+                        \[ \tanh(x) = \frac{e^{x} - e^{-x}}{e^{x} + e^{-x}} \]
+                        <img src="https://production-media.paperswithcode.com/methods/Screen_Shot_2020-05-27_at_4.23.22_PM_dcuMBJl.png">
+                        <br>
+                        \[ \text{ReLu}(x) = \max(0, x) \]
+                        <img src="https://www.researchgate.net/publication/370465617/figure/fig2/AS:11431281155101569@1683057835840/Activation-function-ReLu-ReLu-Rectified-Linear-Activation.png">
+                        <br>
+                        \[ \text{Identitás}(x) = x \]
+                        nem változtat a bemeneten. 
+
+                    </span></span></label> </i></label>
+                    <select class="input" id="{{ stat.idosor_nev }}_actFunction" name="{{ stat.idosor_nev }}_actFunction">
+                        <option value="logistic">Logisztikus (szigmoid)</option>
+                        <option selected value="relu">Rectified Linear Unit</option>
+                        <option value="identity">Identity</option>
+                        <option value="tanh">Tanh</option>
+                    </select>
+                    <br>
+
+                   <label for="{{ stat.idosor_nev }}_">Optimalizációs Algoritmus: 
+                        <i class="info">ℹ️<span class="tooltip">
+                        <ul>
+                            <li><b>SGD: </b>egyszerű, pár paraméteres optimalizálási algoritmus, amely a gradiensek alapján frissíti a paramétereket. A stochastic (véletlenszerű) jelző azt jelzi, hogy minden iterációban csak egy véletlenszerűen választott részletet (batch-et) használ a gradiens kiszámításához és a frissítéshez.
+                                <br> - Hátrányok: Lassabb konvergencia és érzékenység a learning rate választására. <br></li>
+                                <br>  <li><b>ADAM: </b>Jól működik sokféle feladattípusnál, és automatikusan beállítja a learning rate-et a paraméterekre nézve. Általában gyorsan konvergál és kevésbé érzékeny a learning rate választására.
+                                <br>Hátrányok: Néhány esetben érzékeny lehet a zajos gradiensekre, és a paraméterek összetettebbek lehetnek.</li>
+                                <br> <li><b>LBFGS:</b> kvázi-Newton módszer, ami egy lineáris optimalizálási algoritmus. 
+                                <br> - Előnyök: Hatékonyan kezelhető közepesen méretű adatokkal és paraméterekkel. A másodrendű információ használatával gyorsabban konvergálhat. <br>  Hátránya: memóriaintenzív lehet nagy adatmennyiségek és paraméterek esetén. Nem mindig skálázódik jól nagy méretű problémákra.</li>
+                        </ul>                   
+                        </span></span></label>
+
+                        </i></label>
+                    <select class="input" id="{{ stat.idosor_nev }}_solver" name="{{ stat.idosor_nev }}_solver">
+                        <option  value="adam">Adaptive Moment Estimation (ADAM)</option>
+                        <option selected value="lbfgs">Limited-memory Broyden-Fletcher-Goldfarb-Shanno(LBFGS)</option>
+                        <option  value="sgd">Stochastic Gradient Descen (SGD)</option>
+                    </select>
+                    <br>
+                                 
+                    <label for="{{ stat.idosor_nev }}_learning_rate">Tanulási ráta (csak SGD esetében): 
+                        <i class="info">ℹ️<span class="tooltip">
+                            - A tanulási ráta meghatározza, hogy mekkora mértékben változassuk a súlyokat, hogy elárjül a legkisebb hibát. <br>
+                            <img src="{% static 'images/learning_rate.png' %}">     
+                                   <ul>
+                                    <li><b>Konstans: </b> fix értékkel (alapból 0.001)-gyel dolgozik. </li><br>
+                                    <br> <li><b>Adaptív: </b> Nem változtat az értéken addig, amíg a veszteség csökken. <br>Ha két egymást követő epoch után nem csökken a hiba legalább 0.0001-gyel, a tanulási rátát elosztja 5-tel. </li>
+                                    <li><b>Invscaling: </b>Fokozatosan csökkenti a tanulási léptéket.</li>
+                                </ul>
+                        </span></span></label>
+
+                        </i></label>    
+                <select class="input" id="{{ stat.idosor_nev }}_learning_rate" name="{{ stat.idosor_nev }}_learning_rate">
+                    <option  value="constant">Konstans</option>
+                    <option selected value="adaptive">Adaptív</option>
+                    <option  value="invscaling">Invscaling</option>
+                </select>
+                <br>
+
+
+                <label for="{{ stat.idosor_nev }}_lambda">L2 regularizációs együttható (lambda) : 
+                    <i class="info">ℹ️<span class="tooltip">
+                        - Mekkora mértékben legyenek büntetve a nagyobb súlyok? 0 és 1 közötti érték. - <br> Túltanítás ellen, egyszerűbb szerkezetek preferálása. <br> 
+                        <img src="{% static 'images/L2.png' %}">     
+                        <br>     Az L2 (Ridge regresszió) hozzáadja a veszteséghez a súlyok négyzetösszegét egy lambda együtthatóval szorozva. <br>
+                        <img src="{% static 'images/L2_formula.png' %}">     
+                               <ul>
+                                <li><b>Túl kicsi lambda: </b> túltanítás veszélye</li><br>
+                                <li><b>Túl nagy lambda: </b> alultanulás veszélye></li>
+                             </ul>
+                    </span></span></label>
+
+                    </i></label>    
+            <input  type="number" min = "0" max = 1 step="0.0001" class="input" id="{{ stat.idosor_nev }}_alpha" name="{{ stat.idosor_nev }}_alpha" value="0.0001" ">             
+            <br>
+
+                    <input type="hidden" name="{{ stat.idosor_nev }}_x_mode" value="delayed">
+                   <label for="{{ stat.idosor_nev }}_n_delay">Tanító adatbázis készítése: késleltetett értékek (ablakméret): <i class="info">ℹ️
+                        <span class="tooltip">Hány darab korábbi megfigyelésből (input) következzen egy elvárt kimenet? <br> Pl. n = 3, akkor: [2.1, 2.2, 2.24] --> 2.28 </span></span>
+                    </i></label>  
+
+                    <input class="input" type="number" value="3" min="1" name="{{ stat.idosor_nev }}_n_delay" id="{{ stat.idosor_nev }}_n_delay">
+                    <br>
+                    {% endfor %}   
+                    <br><hr>
+                    <label for="n_pred">Előrejelzések száma a tesztadatokon túl: <i class="info">ℹ️
+                        <span class="tooltip">A legjobban konvergált modell megpróbál ennyi darab jövőbeni megfigyelést megjósolni. <br>
+                             Ilyenkor a modell az adatokból nézett legutolsó input mintára előrejelez egyet, <br>
+                              majd az előrejelzett érték kerül az input minta utolsó elemének helyére, és így tovább.  </span></span>
+                    </i></label>
+                    <input class="input" type="number" value="6" min="1"  name="n_pred" id="n_pred">
+                    <br> 
+                     <br>
+                     <div style="display: flex">
+                        <input type="submit" class="button is-info" style="width: 100%;" value="MLP előrejelzések készítése" onclick="showLoader()">
+                        <div class="loader"></div> 
+                     </div>
+            
+            </form>
+            <br><br>
+
+        </section>
+<script>
+      function showLoader() {
+            document.querySelector('.loader').classList.add('visible');
+        }
+</script>
+    </body>
