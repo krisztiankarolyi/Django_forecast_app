@@ -2,6 +2,7 @@
 <h2>User-friendly Django app for forecasting time series 📈</h2>
 <hr>
 <h3>
+  <p><a href="https://allamvizsga.onrender.com" >try it out </a></p>
   <ul>
     <li>⬆️ Upload time series in excel files</li>
     <li>📈 Visualise the data with plots and tables </li>
